@@ -1,5 +1,5 @@
 import type { ClassCell, Evidence } from '../lib/api'
-import { pct, processLabel, reasonText, signalLabel } from '../lib/labels'
+import { fmtSignal, pct, processLabel, reasonText, signalLabel } from '../lib/labels'
 import { Badge } from './ui'
 
 function OutcomeCell({ o }: { o: ClassCell['now'] }) {
@@ -71,7 +71,7 @@ export function EvidenceGrid({ ev, refLabel }: { ev: Evidence; refLabel: string 
                   <ul className="mt-1 text-xs">
                     {c.process.signals.map((s) => (
                       <li key={s.name} className={s.weak ? 'font-bold text-danger' : 'text-muted'}>
-                        {signalLabel[s.name] ?? s.name}: {s.avail ? pct(s.value) : 'tidak tersedia'}
+                        {signalLabel[s.name] ?? s.name}: {s.avail ? fmtSignal(s.name, s.value) : 'tidak tersedia'}
                         {s.weak && ' — lemah'}
                       </li>
                     ))}

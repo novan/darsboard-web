@@ -28,7 +28,14 @@ export const signalLabel: Record<string, string> = {
   execution_coverage: 'Rencana yang terlaksana',
   grading_timeliness: 'Ketepatan penilaian',
   grade_completeness: 'Kelengkapan nilai',
+  assessment_density: 'Penilaian rubrik per murid',
+  lesson_coverage: 'Materi berbeda yang dilatih',
 }
+
+// Sinyal Skolu berupa hitungan (bukan rasio) dan dibandingkan antar kelas paralel.
+const countSignals = new Set(['assessment_density', 'lesson_coverage'])
+export const fmtSignal = (name: string, v: number) =>
+  countSignals.has(name) ? new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(v) : `${Math.round(v * 100)}%`
 
 export const processLabel: Record<ClassCell['process']['status'], string> = {
   ok: 'Lengkap',

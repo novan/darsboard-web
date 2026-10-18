@@ -28,7 +28,7 @@ export default function Finding() {
         id: s.id,
         name: s.name,
         className: ev.class_name ?? '',
-        detail: `Tertinggal pada ${s.scopes.join(', ')}`,
+        detail: `di ${s.scopes.join(', ')}`,
         behind: true,
       }))
     }
