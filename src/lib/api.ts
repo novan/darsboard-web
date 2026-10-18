@@ -1,22 +1,3 @@
-const TOKEN_KEY = 'dashboard-evaluasi.token'
-
-export function getToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY)
-  } catch {
-    return null
-  }
-}
-
-export function setToken(token: string | null) {
-  try {
-    if (token) localStorage.setItem(TOKEN_KEY, token)
-    else localStorage.removeItem(TOKEN_KEY)
-  } catch {
-    /* penyimpanan diblokir: sesi hanya berlaku sampai halaman dimuat ulang */
-  }
-}
-
 export class ApiError extends Error {
   status: number
   code: string
@@ -27,18 +8,11 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = getToken()
-  const res = await fetch(path, {
-    ...init,
-    headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  })
-  if (res.status === 401 && path !== '/api/login') {
-    setToken(null)
-    window.dispatchEvent(new Event('auth:expired'))
+// Panggilan dari browser: selalu ke asal yang sama (proxy server frontend); cookie sesi ikut otomatis.
+export async function get<T>(path: string): Promise<T> {
+  const res = await fetch(path, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+  if (res.status === 401) {
+    window.location.assign('/login')
   }
   if (!res.ok) {
     let code = 'error'
@@ -54,10 +28,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return (await res.json()) as T
 }
-
-export const get = <T,>(path: string) => request<T>(path)
-export const post = <T,>(path: string, body: unknown) =>
-  request<T>(path, { method: 'POST', body: JSON.stringify(body) })
 
 // ---------- tipe respons ----------
 

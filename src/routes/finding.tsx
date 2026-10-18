@@ -1,23 +1,27 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { data, Link, useLoaderData, type LoaderFunctionArgs } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
-import { ApiError } from '../lib/api'
-import { useLoad } from '../lib/useLoad'
 import type { FindingResponse } from '../lib/api'
+import { apiGet } from '../lib/backend.server'
 import { EvidenceGrid } from '../components/EvidenceGrid'
 import { StudentHistory } from '../components/StudentHistory'
 import { StudentTable } from '../components/StudentTable'
 import type { StudentRow } from '../components/StudentTable'
-import { Badge, Card, Spinner } from '../components/ui'
+import { Badge, Card } from '../components/ui'
 import { columnMeta, patternLabel } from '../lib/labels'
 
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const run = new URL(request.url).searchParams.get('run')
+  const id = encodeURIComponent(params.id ?? '')
+  const res = await apiGet<FindingResponse>(request, `/api/findings/${id}${run ? `?run=${encodeURIComponent(run)}` : ''}`)
+  if (!res.ok) {
+    return data({ res: null, failure: { status: res.error.status, message: res.error.message } }, { status: res.error.status })
+  }
+  return { res: res.data, failure: null }
+}
+
 export default function Finding() {
-  const { id } = useParams()
-  const [params] = useSearchParams()
-  const run = params.get('run')
-  const load = useLoad<FindingResponse>(`/api/findings/${id}${run ? `?run=${encodeURIComponent(run)}` : ''}`)
-  const res = load.state === 'ok' ? load.data : null
-  const error = load.state === 'error' ? load.error : null
+  const { res, failure } = useLoaderData<typeof loader>()
   const [openStudent, setOpenStudent] = useState<number | null>(null)
 
   const rows = useMemo<StudentRow[]>(() => {
@@ -50,8 +54,8 @@ export default function Finding() {
 
   const back = res ? `/?unit=${res.finding.unit}&period=${res.finding.period.key}` : '/'
 
-  if (error) {
-    const stale = error instanceof ApiError && error.status === 404
+  if (failure) {
+    const stale = failure.status === 404
     return (
       <div className="flex flex-col gap-3">
         <Link to="/" className="inline-flex items-center gap-1 text-sm font-bold text-navy-700">
@@ -60,12 +64,12 @@ export default function Finding() {
         <p role="alert" className="rounded-lg border border-warn/30 bg-warn-bg p-4 text-warn">
           {stale
             ? 'Temuan ini tidak ada pada perhitungan terbaru. Kemungkinan datanya sudah berubah sejak tautan ini dibuat. Buka agenda untuk melihat temuan saat ini.'
-            : error.message}
+            : failure.message}
         </p>
       </div>
     )
   }
-  if (!res) return <Spinner />
+  if (!res) return null
 
   const { finding, evidence } = res
   const refLabel = evidence.reference_level ?? ''
