@@ -68,7 +68,7 @@ export default function Finding() {
   if (!res) return <Spinner />
 
   const { finding, evidence } = res
-  const refLabel = evidence.scope?.source === 'skolu' ? 'Developing' : 'B'
+  const refLabel = evidence.reference_level ?? ''
   return (
     <div className="flex flex-col gap-4">
       <Link to={back} className="inline-flex items-center gap-1 text-sm font-bold text-navy-700">
@@ -95,6 +95,12 @@ export default function Finding() {
               ))}
             </ul>
           </div>
+        )}
+        {evidence.history_reconstructed && (
+          <p role="note" className="mt-3 rounded-lg border border-warn/30 bg-warn-bg px-3 py-2 text-sm text-warn">
+            <strong>Riwayat belum penuh.</strong> Penguasaan GK baru tercatat sejak sinkronisasi pertama, jadi hasil bulan pembanding dihitung dari
+            data terbaru. Bahwa masalah ini sudah ada bulan lalu belum sepenuhnya terbukti.
+          </p>
         )}
         <p className="mt-3 text-xs text-muted">
           Aturan versi {finding.rules_version}. Perhitungan #{res.run.id}.

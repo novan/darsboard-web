@@ -26,7 +26,7 @@ export function StudentTable({ rows, onOpen }: { rows: StudentRow[]; onOpen: (id
               </th>
               <td className="py-2 pr-3">{r.className}</td>
               <td className="py-2 pr-3">
-                {r.behind && <Badge tone="warn">Tertinggal</Badge>} <span className="text-muted">{r.detail}</span>
+                <Badge tone="warn">Tertinggal</Badge> <span className="text-muted">{r.detail}</span>
               </td>
               <td className="py-2 text-right">
                 <button

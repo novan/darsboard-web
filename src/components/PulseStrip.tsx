@@ -23,7 +23,7 @@ function Row({ c }: { c: Component }) {
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm">{c.label}</span>
         {c.avail ? (
-          <span className="text-lg font-extrabold tabular-nums">{c.key === 'weak_cells' ? c.value?.toFixed(0) : pct(c.value)}</span>
+          <span className="text-lg font-extrabold tabular-nums">{pct(c.value)}</span>
         ) : (
           <span className="text-sm font-semibold text-muted">Tidak tersedia</span>
         )}

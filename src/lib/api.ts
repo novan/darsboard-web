@@ -163,6 +163,8 @@ export type Evidence = {
   classes?: ClassCell[]
   affected_class_ids?: number[]
   thresholds?: { abs_problem_share: number; rel_problem_gap: number }
+  history_reconstructed?: boolean
+  reference_level?: string
   class_id?: number
   class_name?: string
   students?: { id: number; name: string; scopes: string[] }[]
