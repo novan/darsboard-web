@@ -1,13 +1,11 @@
 import { useMemo } from 'react'
 import { useLoaderData, useNavigation, useSearchParams, type LoaderFunctionArgs } from 'react-router'
-import type { AgendaResponse, ColumnKey, PeriodsResponse, StatusResponse, Unit } from '../lib/api'
+import type { AgendaResponse, PeriodsResponse, StatusResponse, Unit } from '../lib/api'
 import { apiGet } from '../lib/backend.server'
-import { FindingColumn } from '../components/FindingColumn'
+import { FindingOverview } from '../components/FindingOverview'
 import { PulseStrip } from '../components/PulseStrip'
 import { StateBanners } from '../components/StateBanner'
 import { Spinner } from '../components/ui'
-
-const COLUMNS: ColumnKey[] = ['program', 'guru', 'murid', 'tinjau']
 
 type Failure = { status: number; code: string; message: string }
 
@@ -126,11 +124,7 @@ export default function Agenda() {
                 semua data lengkap: cek kartu denyut di atas untuk komponen yang tidak tersedia.
               </p>
             )}
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {COLUMNS.map((c) => (
-                <FindingColumn key={c} column={c} items={agenda.columns[c]} initial={agenda.initial_per_column} runId={agenda.run.id} />
-              ))}
-            </div>
+            <FindingOverview columns={agenda.columns} initial={agenda.initial_per_column} runId={agenda.run.id} />
           </div>
         </div>
       )}

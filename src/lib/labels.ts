@@ -1,10 +1,26 @@
 import type { ClassCell, Component, ColumnKey } from './api'
 
-export const columnMeta: Record<ColumnKey, { title: string; hint: string }> = {
-  program: { title: 'Program', hint: 'Masalah ada di rancangan atau materi, bukan di satu guru' },
-  guru: { title: 'Guru', hint: 'Satu kelas tertinggal sementara kelas paralelnya baik' },
-  murid: { title: 'Murid', hint: 'Murid yang tertinggal di kelas yang secara umum baik' },
-  tinjau: { title: 'Perlu ditinjau', hint: 'Data belum cukup untuk memastikan penyebabnya' },
+export const columnMeta: Record<ColumnKey, { title: string; hint: string; action: string }> = {
+  program: {
+    title: 'Program',
+    hint: 'Semua kelas di jenjang itu tertinggal, jadi kemungkinan masalahnya ada di rancangan atau materi, bukan di satu guru.',
+    action: 'Tinjau rancangan dan materi pelajaran.',
+  },
+  guru: {
+    title: 'Guru',
+    hint: 'Satu kelas tertinggal sementara kelas paralelnya baik.',
+    action: 'Dampingi guru atau cek cara mengajar di kelas itu.',
+  },
+  murid: {
+    title: 'Murid',
+    hint: 'Murid yang tertinggal padahal kelasnya secara umum baik.',
+    action: 'Beri pendampingan kepada murid yang bersangkutan.',
+  },
+  tinjau: {
+    title: 'Perlu ditinjau',
+    hint: 'Datanya belum cukup untuk memastikan penyebabnya.',
+    action: 'Cek data, atau konfirmasi langsung dengan guru dan koordinator.',
+  },
 }
 
 export const patternLabel: Record<string, string> = {
