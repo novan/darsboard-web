@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
-import { useLoaderData, useNavigation, useSearchParams, type LoaderFunctionArgs } from 'react-router'
-import type { AgendaResponse, PeriodsResponse, StatusResponse, Unit } from '../lib/api'
+import { useEffect, useMemo } from 'react'
+import { useLoaderData, useNavigation, useRevalidator, useSearchParams, type LoaderFunctionArgs } from 'react-router'
+import type { AgendaResponse, PeriodsResponse, Unit } from '../lib/api'
 import { apiGet } from '../lib/backend.server'
 import { FindingOverview } from '../components/FindingOverview'
 import { PulseStrip } from '../components/PulseStrip'
@@ -8,6 +8,8 @@ import { Select, type SelectGroup } from '../components/Select'
 import { SyncStatus } from '../components/SyncStatus'
 import { Badge, Spinner } from '../components/ui'
 import { Clock } from 'lucide-react'
+
+const REFRESH_MS = 60_000
 
 type Failure = { status: number; code: string; message: string }
 
@@ -21,17 +23,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
   const unit = params.get('unit') ?? periods.data.default.unit
   const period = params.get('period') ?? periods.data.default.period
-  const [agenda, status] = await Promise.all([
-    apiGet<AgendaResponse>(request, `/api/agenda?unit=${encodeURIComponent(unit)}&period=${encodeURIComponent(period)}`),
-    apiGet<StatusResponse>(request, '/api/status'),
-  ])
+  const agenda = await apiGet<AgendaResponse>(request, `/api/agenda?unit=${encodeURIComponent(unit)}&period=${encodeURIComponent(period)}`)
   const failure: Failure | null = agenda.ok ? null : { status: agenda.error.status, code: agenda.error.code, message: agenda.error.message }
   return {
     periods: periods.data,
     unit: unit as Unit,
     period,
     agenda: agenda.ok ? agenda.data : null,
-    status: status.ok ? status.data : null,
     error: failure,
   }
 }
@@ -40,6 +38,21 @@ export default function Agenda() {
   const data = useLoaderData<typeof loader>()
   const [params, setParams] = useSearchParams()
   const loading = useNavigation().state === 'loading'
+
+  // Status sinkronisasi berubah di server tanpa aksi pengguna; muat ulang berkala dan saat tab kembali aktif
+  // supaya peringatan hilang sendiri setelah sinkronisasi berikutnya berhasil.
+  const { revalidate, state: revalidating } = useRevalidator()
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible' && revalidating === 'idle') revalidate()
+    }
+    const timer = setInterval(refresh, REFRESH_MS)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [revalidate, revalidating])
   const periods = data.periods
   const months = useMemo(() => periods?.periods.filter((p) => p.kind === 'month') ?? [], [periods])
   const terms = useMemo(() => periods?.periods.filter((p) => p.kind === 'term') ?? [], [periods])
@@ -64,7 +77,7 @@ export default function Agenda() {
     )
   }
 
-  const { agenda, status, unit, period } = data
+  const { agenda, unit, period } = data
   const currentPeriod = periods.periods.find((p) => p.key === period)
   const toOption = (p: (typeof months)[number]) => ({ value: p.key, label: p.label, note: p.provisional ? 'sementara' : undefined })
   const periodGroups: SelectGroup[] = [
@@ -97,7 +110,7 @@ export default function Agenda() {
         {loading && <Spinner label="Memuat…" />}
         {agenda && (
           <div className="ml-auto">
-            <SyncStatus agenda={agenda} status={status} />
+            <SyncStatus agenda={agenda} />
           </div>
         )}
       </div>

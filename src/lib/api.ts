@@ -80,9 +80,16 @@ export type ColumnKey = 'program' | 'guru' | 'murid' | 'tinjau'
 
 export type SourceState = {
   source: string
+  // Sinkronisasi penuh terakhir yang berhasil; stale bila lebih tua dari 36 jam.
   as_of?: string
   stale: boolean
-  last_status?: string
+  // Percobaan terakhir (berhasil atau tidak) dan sebab singkat bila gagal.
+  last_status?: 'running' | 'succeeded' | 'partial' | 'failed'
+  last_attempt?: string
+  last_error?: string
+  expires_at?: string
+  expires_in_days?: number
+  expiry_warning: boolean
 }
 
 export type AgendaResponse = {
@@ -162,18 +169,4 @@ export type StudentHistoryResponse = {
   rubric: { area: string; lessons: { lesson_ref: string; title?: string; series: HistoryPoint[] }[] }[]
   mastery: { subject: string; standards: { code: string; series: HistoryPoint[] }[] }[]
   notes: { mastery_history_since: string }
-}
-
-export type StatusResponse = {
-  run: RunInfo
-  sources: {
-    source: string
-    last_status?: string
-    last_attempt?: string
-    as_of?: string
-    stale: boolean
-    expires_at?: string
-    expires_in_days?: number
-    expiry_warning: boolean
-  }[]
 }
