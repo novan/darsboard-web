@@ -98,3 +98,9 @@ export function pointsDiff(cur?: number, prev?: number): string {
   const d = Math.round(cur * 100) - Math.round(prev * 100)
   return `${d > 0 ? '+' : d < 0 ? '−' : ''}${Math.abs(d)} poin`
 }
+
+// Selisih dua persentase dalam poin bulat (dari angka yang tampil, dibulatkan). 0 bila salah satunya kosong.
+export function pointsDelta(cur?: number, prev?: number): number {
+  if (cur == null || prev == null) return 0
+  return Math.round(cur * 100) - Math.round(prev * 100)
+}

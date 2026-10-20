@@ -1,6 +1,6 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, HelpCircle } from 'lucide-react'
 import type { AgendaResponse, Component } from '../lib/api'
-import { componentHint, directionLabel, pct, pointsDiff, pulseTitle, reasonText } from '../lib/labels'
+import { componentHint, directionLabel, pct, pointsDelta, pulseTitle, reasonText } from '../lib/labels'
 import { Badge, Card } from './ui'
 
 function Direction({ c }: { c: Component }) {
@@ -17,14 +17,32 @@ function Direction({ c }: { c: Component }) {
   }
 }
 
+// Selisih terhadap periode sebelumnya, ditulis ringkas di bawah angka: "+3" hijau bila membaik, "−3" merah bila memburuk.
+// Kosong bila tetap atau tidak ada pembanding. Warna mengikuti arti (proses lemah yang turun tetap hijau); tanda dan
+// keterangan hover memuat rincian periode pembanding.
+function Delta({ c, periodLabel }: { c: Component; periodLabel: (key: string) => string }) {
+  if (c.prev_value == null || !c.prev_period || (c.direction !== 'membaik' && c.direction !== 'memburuk')) return null
+  const d = pointsDelta(c.value, c.prev_value)
+  if (d === 0) return null
+  const tone = c.direction === 'membaik' ? 'text-ok' : 'text-danger'
+  return (
+    <span className={`text-sm font-bold tabular-nums ${tone}`} title={`${periodLabel(c.prev_period)}: ${pct(c.prev_value)}`}>
+      {d > 0 ? '+' : '−'}
+      {Math.abs(d)}
+    </span>
+  )
+}
+
 function Row({ c, periodLabel }: { c: Component; periodLabel: (key: string) => string }) {
-  const prevText = c.prev_value != null && c.prev_period ? `${periodLabel(c.prev_period)}: ${pct(c.prev_value)}` : ''
   return (
     <li className="flex flex-col gap-1 border-t border-line py-2 first:border-t-0 first:pt-0">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm">{c.label}</span>
+      <div className="flex items-start justify-between gap-2">
+        <span className="pt-0.5 text-sm">{c.label}</span>
         {c.avail ? (
-          <span className="text-lg font-extrabold tabular-nums">{pct(c.value)}</span>
+          <span className="flex flex-col items-end leading-tight">
+            <span className="text-lg font-extrabold tabular-nums">{pct(c.value)}</span>
+            <Delta c={c} periodLabel={periodLabel} />
+          </span>
         ) : (
           <span className="text-sm font-semibold text-muted">Tidak tersedia</span>
         )}
@@ -36,11 +54,6 @@ function Row({ c, periodLabel }: { c: Component; periodLabel: (key: string) => s
         )}
         {c.reconstructed && <Badge tone="warn">dihitung ulang dari data terbaru</Badge>}
       </div>
-      {prevText && (
-        <p className="text-xs text-muted">
-          Periode sebelumnya ({prevText}){c.direction !== 'tidak_tersedia' && ` · ${pointsDiff(c.value, c.prev_value)}`}
-        </p>
-      )}
       {componentHint[c.key] && <p className="text-xs text-muted">{componentHint[c.key]}</p>}
       {c.detail && <p className="text-xs text-muted">{c.detail}</p>}
     </li>
