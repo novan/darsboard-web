@@ -1,5 +1,5 @@
 import { createCookie, redirect } from 'react-router'
-import { ApiError } from './api'
+import { ApiError, type PeriodsResponse, type Unit } from './api'
 
 // Modul khusus server: tidak ikut ke bundel browser. Token JWT backend hanya hidup di cookie httpOnly.
 
@@ -78,4 +78,21 @@ export async function apiGet<T>(request: Request, path: string): Promise<ApiResu
 // Hanya jalur relatif satu-asal yang boleh jadi tujuan setelah masuk (cegah open redirect).
 export function safeFrom(v: string | null | undefined): string {
   return v && v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/\\') ? v : '/'
+}
+
+export type Failure = { status: number; code: string; message: string }
+
+export const toFailure = (e: ApiError): Failure => ({ status: e.status, code: e.code, message: e.message })
+
+// Konteks bersama halaman agenda dan murid: daftar periode serta unit dan periode terpilih (default dari backend).
+export async function periodContext(request: Request) {
+  const params = new URL(request.url).searchParams
+  const periods = await apiGet<PeriodsResponse>(request, '/api/periods')
+  if (!periods.ok) return { ok: false as const, failure: toFailure(periods.error) }
+  return {
+    ok: true as const,
+    periods: periods.data,
+    unit: (params.get('unit') ?? periods.data.default.unit) as Unit,
+    period: params.get('period') ?? periods.data.default.period,
+  }
 }

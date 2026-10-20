@@ -170,3 +170,24 @@ export type StudentHistoryResponse = {
   mastery: { subject: string; standards: { code: string; series: HistoryPoint[] }[] }[]
   notes: { mastery_history_since: string }
 }
+
+export type StudentStatus = 'behind' | 'watch' | 'ok' | 'insufficient'
+
+export type StudentListItem = {
+  id: number
+  name: string
+  class: string
+  status: StudentStatus
+  assessed: number
+  behind: number
+  behind_scopes: string[]
+}
+
+export type StudentListResponse = {
+  run: RunInfo
+  unit: Unit
+  period: Period
+  counts: { total: number; behind: number; watch: number; ok: number; insufficient: number }
+  classes: string[]
+  students: StudentListItem[]
+}
