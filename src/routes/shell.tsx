@@ -1,5 +1,5 @@
 import { Form, NavLink, Outlet, redirect, useSearchParams, type LoaderFunctionArgs } from 'react-router'
-import { LayoutList, LogOut, Users } from 'lucide-react'
+import { ChartLine, LayoutList, LogOut, Users } from 'lucide-react'
 import { getToken } from '../lib/backend.server'
 import { Button } from '../components/ui'
 
@@ -28,23 +28,26 @@ export default function Shell() {
   const qs = keep.size > 0 ? `?${keep}` : ''
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16">
-      <header className="flex items-center justify-between gap-3 py-4">
+      <header className="flex items-center justify-between gap-3 py-4 print:py-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-gold-500">Darsyafii Islamic School</p>
           <h1 className="text-xl font-extrabold text-navy-900">Dashboard Evaluasi</h1>
         </div>
-        <Form method="post" action="/logout">
+        <Form method="post" action="/logout" className="print:hidden">
           <Button variant="ghost" type="submit">
             <LogOut className="h-4 w-4" aria-hidden /> Keluar
           </Button>
         </Form>
       </header>
-      <nav aria-label="Menu utama" className="mb-4 flex gap-1 border-b border-line">
+      <nav aria-label="Menu utama" className="mb-4 flex gap-1 overflow-x-auto border-b border-line print:hidden">
         <NavLink to={`/${qs}`} end className={navClass}>
           <LayoutList className="h-4 w-4" aria-hidden /> Agenda temuan
         </NavLink>
         <NavLink to={`/murid${qs}`} className={navClass}>
           <Users className="h-4 w-4" aria-hidden /> Daftar murid
+        </NavLink>
+        <NavLink to={`/laporan${qs}`} className={navClass}>
+          <ChartLine className="h-4 w-4" aria-hidden /> Laporan
         </NavLink>
       </nav>
       <main>

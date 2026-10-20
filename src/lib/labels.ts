@@ -71,9 +71,9 @@ const reasonLabel: Record<string, string> = {
 export const reasonText = (r?: string) => (r ? (reasonLabel[r] ?? r) : '')
 
 export const directionLabel: Record<Component['direction'], string> = {
-  membaik: 'Membaik',
+  membaik: 'Meningkat',
   tetap: 'Tetap',
-  memburuk: 'Memburuk',
+  memburuk: 'Menurun',
   tidak_tersedia: 'Arah belum tersedia',
 }
 
@@ -87,3 +87,14 @@ const dateFmt = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long'
 const dateTimeFmt = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short' })
 export const fmtDate = (iso?: string) => (iso ? dateFmt.format(new Date(iso)) : '–')
 export const fmtDateTime = (iso?: string) => (iso ? dateTimeFmt.format(new Date(iso)) : '–')
+
+// Keterangan tambahan per komponen denyut. Proses lemah adalah ukuran terbalik: makin kecil makin baik.
+export const componentHint: Record<string, string> = { weak_cells: 'Makin kecil makin baik.' }
+
+// Selisih dua persentase dalam poin, dengan tanda. Contoh: +2 poin, −3 poin, 0 poin.
+export function pointsDiff(cur?: number, prev?: number): string {
+  if (cur == null || prev == null) return ''
+  // Selisih dihitung dari angka yang tampil (dibulatkan) supaya cocok dengan persentase di layar.
+  const d = Math.round(cur * 100) - Math.round(prev * 100)
+  return `${d > 0 ? '+' : d < 0 ? '−' : ''}${Math.abs(d)} poin`
+}

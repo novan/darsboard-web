@@ -1,6 +1,6 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, HelpCircle } from 'lucide-react'
 import type { AgendaResponse, Component } from '../lib/api'
-import { directionLabel, pct, pulseTitle, reasonText } from '../lib/labels'
+import { componentHint, directionLabel, pct, pointsDiff, pulseTitle, reasonText } from '../lib/labels'
 import { Badge, Card } from './ui'
 
 function Direction({ c }: { c: Component }) {
@@ -17,7 +17,8 @@ function Direction({ c }: { c: Component }) {
   }
 }
 
-function Row({ c }: { c: Component }) {
+function Row({ c, periodLabel }: { c: Component; periodLabel: (key: string) => string }) {
+  const prevText = c.prev_value != null && c.prev_period ? `${periodLabel(c.prev_period)}: ${pct(c.prev_value)}` : ''
   return (
     <li className="flex flex-col gap-1 border-t border-line py-2 first:border-t-0 first:pt-0">
       <div className="flex items-baseline justify-between gap-2">
@@ -35,12 +36,18 @@ function Row({ c }: { c: Component }) {
         )}
         {c.reconstructed && <Badge tone="warn">dihitung ulang dari data terbaru</Badge>}
       </div>
+      {prevText && (
+        <p className="text-xs text-muted">
+          Periode sebelumnya ({prevText}){c.direction !== 'tidak_tersedia' && ` · ${pointsDiff(c.value, c.prev_value)}`}
+        </p>
+      )}
+      {componentHint[c.key] && <p className="text-xs text-muted">{componentHint[c.key]}</p>}
       {c.detail && <p className="text-xs text-muted">{c.detail}</p>}
     </li>
   )
 }
 
-export function PulseStrip({ pulses }: { pulses: AgendaResponse['pulses'] }) {
+export function PulseStrip({ pulses, periodLabel }: { pulses: AgendaResponse['pulses']; periodLabel: (key: string) => string }) {
   return (
     <div className="grid gap-3 md:grid-cols-3">
       {(['commitment', 'process', 'outcome'] as const).map((k) => {
@@ -53,7 +60,7 @@ export function PulseStrip({ pulses }: { pulses: AgendaResponse['pulses'] }) {
             ) : (
               <ul>
                 {comps.map((c) => (
-                  <Row key={c.key} c={c} />
+                  <Row key={c.key} c={c} periodLabel={periodLabel} />
                 ))}
               </ul>
             )}

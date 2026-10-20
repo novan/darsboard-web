@@ -51,7 +51,7 @@ export default function Agenda() {
       {agenda && (
         <div className={loading ? 'opacity-60 transition-opacity' : undefined}>
           <div className="flex flex-col gap-4">
-            <PulseStrip pulses={agenda.pulses} />
+            <PulseStrip pulses={agenda.pulses} periodLabel={(key) => data.periods?.periods.find((p) => p.key === key)?.label ?? key} />
             {agenda.empty && (
               <p className="rounded-lg border border-ok/30 bg-ok-bg p-4 text-ok">
                 <strong>Tidak ada temuan.</strong> Pada periode ini tidak ada kelas yang memenuhi kriteria perlu ditinjau. Ini bukan berarti

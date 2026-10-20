@@ -61,6 +61,10 @@ export type Component = {
   direction_reason?: string
   reconstructed?: boolean
   detail?: string
+  // Nilai dan kunci periode pembanding (bulan atau term sebelumnya) sebagai acuan angka.
+  prev_value?: number
+  prev_period?: string
+  higher_is_better?: boolean
 }
 
 export type FindingSummary = {
@@ -191,3 +195,13 @@ export type StudentListResponse = {
   classes: string[]
   students: StudentListItem[]
 }
+
+export type ReportMonth = {
+  key: string
+  label: string
+  provisional: boolean
+  pulses: Partial<Record<'commitment' | 'process' | 'outcome', Component[]>>
+  findings: Record<ColumnKey | 'total', number>
+}
+
+export type ReportResponse = { run: RunInfo; unit: Unit; months: ReportMonth[] }
