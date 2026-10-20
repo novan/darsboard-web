@@ -36,23 +36,24 @@ function Delta({ c, periodLabel }: { c: Component; periodLabel: (key: string) =>
 function Row({ c, periodLabel }: { c: Component; periodLabel: (key: string) => string }) {
   return (
     <li className="flex flex-col gap-1 border-t border-line py-2 first:border-t-0 first:pt-0">
-      <div className="flex items-start justify-between gap-2">
-        <span className="pt-0.5 text-sm">{c.label}</span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm">{c.label}</span>
         {c.avail ? (
-          <span className="flex flex-col items-end leading-tight">
-            <span className="text-lg font-extrabold tabular-nums">{pct(c.value)}</span>
-            <Delta c={c} periodLabel={periodLabel} />
-          </span>
+          <span className="text-lg font-extrabold tabular-nums">{pct(c.value)}</span>
         ) : (
           <span className="text-sm font-semibold text-muted">Tidak tersedia</span>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        {c.avail ? <Direction c={c} /> : <Badge tone="neutral">{reasonText(c.reason)}</Badge>}
-        {c.avail && c.direction === 'tidak_tersedia' && c.direction_reason && (
-          <span className="text-xs text-muted">{reasonText(c.direction_reason)}</span>
-        )}
-        {c.reconstructed && <Badge tone="warn">dihitung ulang dari data terbaru</Badge>}
+      {/* Status di kiri dan selisih di kanan pada satu baris, tepat di bawah angka persentase. */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {c.avail ? <Direction c={c} /> : <Badge tone="neutral">{reasonText(c.reason)}</Badge>}
+          {c.avail && c.direction === 'tidak_tersedia' && c.direction_reason && (
+            <span className="text-xs text-muted">{reasonText(c.direction_reason)}</span>
+          )}
+          {c.reconstructed && <Badge tone="warn">dihitung ulang dari data terbaru</Badge>}
+        </div>
+        {c.avail && <Delta c={c} periodLabel={periodLabel} />}
       </div>
       {componentHint[c.key] && <p className="text-xs text-muted">{componentHint[c.key]}</p>}
       {c.detail && <p className="text-xs text-muted">{c.detail}</p>}
