@@ -79,7 +79,7 @@ function FindingSection({ kind, items, initial, runId }: { kind: ColumnKey; item
           <Icon className="h-5 w-5" aria-hidden /> {meta.title}
           <span className="rounded-full bg-navy-50 px-2 text-xs font-bold text-navy-700">0</span>
         </h3>
-        <p className="text-sm text-muted">Tidak ada temuan pada jenis ini.</p>
+        <p className="text-sm text-muted">Tidak ada temuan.</p>
       </section>
     )
   }

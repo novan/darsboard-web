@@ -4,8 +4,10 @@ import type { AgendaResponse, PeriodsResponse, StatusResponse, Unit } from '../l
 import { apiGet } from '../lib/backend.server'
 import { FindingOverview } from '../components/FindingOverview'
 import { PulseStrip } from '../components/PulseStrip'
-import { StateBanners } from '../components/StateBanner'
-import { Spinner } from '../components/ui'
+import { Select, type SelectGroup } from '../components/Select'
+import { SyncStatus } from '../components/SyncStatus'
+import { Badge, Spinner } from '../components/ui'
+import { Clock } from 'lucide-react'
 
 type Failure = { status: number; code: string; message: string }
 
@@ -63,6 +65,12 @@ export default function Agenda() {
   }
 
   const { agenda, status, unit, period } = data
+  const currentPeriod = periods.periods.find((p) => p.key === period)
+  const toOption = (p: (typeof months)[number]) => ({ value: p.key, label: p.label, note: p.provisional ? 'sementara' : undefined })
+  const periodGroups: SelectGroup[] = [
+    { label: 'Bulan', options: months.map(toOption) },
+    { label: 'Term', options: terms.map(toOption) },
+  ].filter((g) => g.options.length > 0)
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
@@ -80,32 +88,18 @@ export default function Agenda() {
             </button>
           ))}
         </div>
-        <label className="flex flex-col gap-1 text-xs font-semibold text-muted">
-          Periode
-          <select
-            value={period}
-            onChange={(e) => choose({ period: e.target.value })}
-            className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-ink"
-          >
-            <optgroup label="Bulan">
-              {months.map((p) => (
-                <option key={p.key} value={p.key}>
-                  {p.label}
-                  {p.provisional ? ' (sementara)' : ''}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Term">
-              {terms.map((p) => (
-                <option key={p.key} value={p.key}>
-                  {p.label}
-                  {p.provisional ? ' (sementara)' : ''}
-                </option>
-              ))}
-            </optgroup>
-          </select>
-        </label>
+        <Select label="Periode" value={period} groups={periodGroups} onChange={(v) => choose({ period: v })} />
+        {currentPeriod?.provisional && (
+          <Badge tone="warn" icon={<Clock className="h-3 w-3" aria-hidden />}>
+            Periode sementara: nilai masih bisa berubah
+          </Badge>
+        )}
         {loading && <Spinner label="Memuat…" />}
+        {agenda && (
+          <div className="ml-auto">
+            <SyncStatus agenda={agenda} status={status} />
+          </div>
+        )}
       </div>
 
       {data.error && (
@@ -116,7 +110,6 @@ export default function Agenda() {
       {agenda && (
         <div className={loading ? 'opacity-60 transition-opacity' : undefined}>
           <div className="flex flex-col gap-4">
-            <StateBanners agenda={agenda} status={status} />
             <PulseStrip pulses={agenda.pulses} />
             {agenda.empty && (
               <p className="rounded-lg border border-ok/30 bg-ok-bg p-4 text-ok">

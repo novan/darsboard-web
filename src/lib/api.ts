@@ -169,6 +169,7 @@ export type StatusResponse = {
   sources: {
     source: string
     last_status?: string
+    last_attempt?: string
     as_of?: string
     stale: boolean
     expires_at?: string

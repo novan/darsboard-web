@@ -4,7 +4,7 @@ import { Badge } from './ui'
 export type StudentRow = { id: number; name: string; className: string; detail: string; behind: boolean }
 
 export function StudentTable({ rows, onOpen }: { rows: StudentRow[]; onOpen: (id: number) => void }) {
-  if (rows.length === 0) return <p className="text-sm text-muted">Tidak ada murid yang tertinggal pada temuan ini.</p>
+  if (rows.length === 0) return <p className="text-sm text-muted">Tidak ada murid yang ditampilkan untuk temuan ini.</p>
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[480px] border-collapse text-sm">
@@ -26,7 +26,7 @@ export function StudentTable({ rows, onOpen }: { rows: StudentRow[]; onOpen: (id
               </th>
               <td className="py-2 pr-3">{r.className}</td>
               <td className="py-2 pr-3">
-                <Badge tone="warn">Tertinggal</Badge> <span className="text-muted">{r.detail}</span>
+                {r.behind ? <Badge tone="warn">Tertinggal</Badge> : <Badge tone="ok">Di level acuan</Badge>} <span className="text-muted">{r.detail}</span>
               </td>
               <td className="py-2 text-right">
                 <button

@@ -24,33 +24,44 @@ export default function Finding() {
   const { res, failure } = useLoaderData<typeof loader>()
   const [openStudent, setOpenStudent] = useState<number | null>(null)
 
-  const rows = useMemo<StudentRow[]>(() => {
-    if (!res) return []
+  // Murid pada program (mapel/area) ini: yang tertinggal dan seluruh murid di kelas yang dibandingkan.
+  const [mode, setMode] = useState<'behind' | 'all'>('behind')
+  const { behindRows, allRows } = useMemo(() => {
+    const out = { behindRows: [] as StudentRow[], allRows: [] as StudentRow[] }
+    if (!res) return out
     const ev = res.evidence
     if (ev.students) {
-      return ev.students.map((s) => ({
+      out.behindRows = ev.students.map((s) => ({
         id: s.id,
         name: s.name,
         className: ev.class_name ?? '',
         detail: `di ${s.scopes.join(', ')}`,
         behind: true,
       }))
+      return out
     }
     const affected = new Set(ev.affected_class_ids ?? [])
-    return (ev.classes ?? [])
-      .filter((c) => affected.has(c.class_id))
-      .flatMap((c) =>
-        (c.students ?? [])
-          .filter((s) => s.behind)
-          .map((s) => ({
-            id: s.student_id,
-            name: s.name,
-            className: c.class_name,
-            detail: `${s.at_ref} dari ${s.obs} pengamatan di level acuan`,
-            behind: true,
-          })),
-      )
+    const byName = (a: StudentRow, b: StudentRow) => a.className.localeCompare(b.className) || a.name.localeCompare(b.name, 'id')
+    for (const c of ev.classes ?? []) {
+      for (const s of c.students ?? []) {
+        const row: StudentRow = {
+          id: s.student_id,
+          name: s.name,
+          className: c.class_name,
+          detail: `${s.at_ref} dari ${s.obs} pengamatan di level acuan`,
+          behind: s.behind,
+        }
+        out.allRows.push(row)
+        if (s.behind && affected.has(c.class_id)) out.behindRows.push(row)
+      }
+    }
+    out.behindRows.sort(byName)
+    // Yang tertinggal tampil lebih dulu, lalu urut kelas dan nama.
+    out.allRows.sort((a, b) => Number(b.behind) - Number(a.behind) || byName(a, b))
+    return out
   }, [res])
+  const canShowAll = allRows.length > 0
+  const rows = mode === 'all' && canShowAll ? allRows : behindRows
 
   const back = res ? `/?unit=${res.finding.unit}&period=${res.finding.period.key}` : '/'
 
@@ -123,7 +134,34 @@ export default function Finding() {
       )}
 
       <Card>
-        <h2 className="mb-2 text-base font-extrabold text-navy-900">Murid</h2>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-extrabold text-navy-900">Murid</h2>
+          {canShowAll && (
+            <div role="group" aria-label="Murid yang ditampilkan" className="inline-flex overflow-hidden rounded-lg border border-line text-sm">
+              {(
+                [
+                  ['behind', `Yang tertinggal (${behindRows.length})`],
+                  ['all', `Semua murid (${allRows.length})`],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={mode === k}
+                  onClick={() => setMode(k)}
+                  className={`px-3 py-1.5 font-bold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-navy-700 ${
+                    mode === k ? 'bg-navy-900 text-white' : 'text-navy-700 hover:bg-navy-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {canShowAll && mode === 'all' && (
+          <p className="mb-2 text-xs text-muted">Seluruh murid yang punya penilaian pada {evidence.scope?.name ?? 'program'} di kelas yang dibandingkan.</p>
+        )}
         <StudentTable rows={rows} onOpen={setOpenStudent} />
       </Card>
 
